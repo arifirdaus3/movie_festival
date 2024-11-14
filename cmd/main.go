@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	handlerhttp "moviefestival/handler/http"
 	"moviefestival/model"
-	"net/http"
+	repositorysql "moviefestival/repository/sql"
+	authusecase "moviefestival/usecase/auth"
 
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
@@ -24,9 +26,12 @@ func main() {
 		log.Fatal("failed to migrate database model, ", err)
 	}
 	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
-	})
+	repositorySQL := repositorysql.NewRepositorySQL(db)
+	authUsecase := authusecase.NewAuthUsecase(repositorySQL)
+	handlerHTTP := handlerhttp.NewHandlerHTTP(authUsecase)
+
+	handlerHTTP.InitRoute(e)
+
 	e.Logger.Fatal(e.Start(":" + config.HTTPPort))
 }
 
