@@ -9,4 +9,8 @@ type Config struct {
 	PostgresHost     string `mapstructure:"POSTGRES_HOST"`
 
 	HTTPPort string `mapstructure:"HTTP_PORT"`
+
+	AccessTokenExpirationMinute  int64  `mapstructure:"ACCESS_TOKEN_EXPIRATION_MINUTE"`
+	RefreshTokenExpirationMinute int64  `mapstructure:"REFRESH_TOKEN_EXPIRATION_MINUTE"`
+	SignTokenSecret              string `mapstructure:"SIGN_TOKEN_SECRET"`
 }

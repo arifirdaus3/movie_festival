@@ -27,7 +27,7 @@ func main() {
 	}
 	e := echo.New()
 	repositorySQL := repositorysql.NewRepositorySQL(db)
-	authUsecase := authusecase.NewAuthUsecase(repositorySQL)
+	authUsecase := authusecase.NewAuthUsecase(&config, repositorySQL)
 	handlerHTTP := handlerhttp.NewHandlerHTTP(authUsecase)
 
 	handlerHTTP.InitRoute(e)
