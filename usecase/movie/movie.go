@@ -22,6 +22,7 @@ type repository interface {
 	GetArtistsByIDs(ctx context.Context, artistIDs []uint) ([]model.Artist, error)
 	GetMoviesByIDs(ctx context.Context, movieIDs []uint) ([]model.Movie, error)
 	UpdateMovie(ctx context.Context, movie model.Movie, extraArgs model.UpdateMovieArgs) error
+	InsertMovieUsers(ctx context.Context, user model.User, movie model.Movie) error
 }
 
 func NewMovieUsecase(repository repository) *MovieUsecase {
@@ -152,6 +153,23 @@ func (a *MovieUsecase) UpdateMovie(ctx context.Context, updateMovie model.Update
 		movies[0].WatchURL = *updateMovie.WatchURL
 	}
 	err = a.repository.UpdateMovie(ctx, movies[0], extra)
+	if err != nil {
+		log.Error().Err(err).Msg("error when insert movie")
+		return echo.NewHTTPError(http.StatusInternalServerError, "There is error with our database, please try again later!")
+	}
+	return nil
+}
+
+func (a *MovieUsecase) ViewedMovie(ctx context.Context, user model.User, movie model.Movie) error {
+	movies, err := a.repository.GetMoviesByIDs(ctx, []uint{movie.ID})
+	if len(movies) != 1 {
+		return echo.NewHTTPError(http.StatusNotFound, "Movie not found")
+	}
+	if err != nil {
+		log.Error().Err(err).Msg("error when fetch movie")
+		return echo.NewHTTPError(http.StatusInternalServerError, "There is error with our database, please try again later!")
+	}
+	err = a.repository.InsertMovieUsers(ctx, user, movies[0])
 	if err != nil {
 		log.Error().Err(err).Msg("error when insert movie")
 		return echo.NewHTTPError(http.StatusInternalServerError, "There is error with our database, please try again later!")

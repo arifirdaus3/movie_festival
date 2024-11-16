@@ -8,6 +8,7 @@ type Movie struct {
 	Description    string
 	Duration       int64
 	WatchURL       string
+	Views          int64    `gorm:"default:0"`
 	Users          []User   `gorm:"many2many:user_movies;"`
 	Artists        []Artist `gorm:"many2many:movie_artists;"`
 	Genres         []Genre  `gorm:"many2many:movie_genres;"`
@@ -18,6 +19,7 @@ type MovieHTTPResponse struct {
 	Title       string               `json:"title"`
 	Description string               `json:"description"`
 	Duration    int64                `json:"duration"`
+	Views       int64                `json:"views"`
 	WatchURL    string               `json:"watchURL"`
 	Genres      []GenreHTTPResponse  `json:"genres"`
 	Artists     []ArtistHTTPResponse `json:"artists"`
@@ -87,5 +89,6 @@ func NewMovieHTTPResponse(m Movie) MovieHTTPResponse {
 		WatchURL:    m.WatchURL,
 		Genres:      genres,
 		Artists:     artists,
+		Views:       m.Views,
 	}
 }

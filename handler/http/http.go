@@ -15,6 +15,7 @@ import (
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"gorm.io/gorm"
 )
 
 type HandlerHTTP struct {
@@ -43,6 +44,7 @@ type movieUsecase interface {
 	InsertMovie(ctx context.Context, movies model.Movie) error
 	GetMovies(ctx context.Context, filter model.FilterMovie) ([]model.Movie, error)
 	UpdateMovie(ctx context.Context, updateMovie model.UpdateMovie) error
+	ViewedMovie(ctx context.Context, user model.User, movie model.Movie) error
 }
 
 func NewHandlerHTTP(config *model.Config, authUsecase authUsecase, artistUsecase artistUsecase, genreUsecase genreUsecase, movieUsecase movieUsecase) *HandlerHTTP {
@@ -79,6 +81,12 @@ func (h *HandlerHTTP) InitRoute(e *echo.Echo) {
 			return next(c)
 		}
 	})
+	userRoute := e.Group("", echojwt.WithConfig(echojwt.Config{
+		SigningKey: []byte(h.config.SignTokenSecret),
+		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+			return &model.CustomClaim{}
+		},
+	}))
 
 	e.Static("/public", "public")
 	e.POST("/auth/register", h.Register)
@@ -97,7 +105,8 @@ func (h *HandlerHTTP) InitRoute(e *echo.Echo) {
 
 	e.GET("/movie", h.GetMovies)
 
-	e.POST("/movie/viewed", h.Refresh)
+	userRoute.POST("/movie/viewed", h.ViewedMovie)
+
 	e.POST("/movie/vote", h.Refresh)
 	e.GET("/movie/voted", h.Refresh)
 	e.GET("/movie/most-voted", h.Refresh)
@@ -332,5 +341,37 @@ func (h *HandlerHTTP) GetMovies(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		Status: model.ResponseStatusSuccess,
 		Data:   res,
+	})
+}
+
+func (h *HandlerHTTP) ViewedMovie(c echo.Context) error {
+	var movie model.MovieHTTPResponse
+	c.Bind(&movie)
+	err := validation.ValidateStruct(&movie,
+		validation.Field(&movie.ID, validation.Required),
+	)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	token, ok := c.Get("user").(*jwt.Token)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid token")
+	}
+	user, ok := token.Claims.(*model.CustomClaim)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid token")
+	}
+
+	err = h.movieUsecase.ViewedMovie(c.Request().Context(), model.User{
+		Model: gorm.Model{ID: user.ID},
+	}, model.Movie{
+		Model: gorm.Model{ID: movie.ID},
+	})
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, model.Response{
+		Status: model.ResponseStatusSuccess,
 	})
 }

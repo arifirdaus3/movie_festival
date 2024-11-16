@@ -76,6 +76,7 @@ func (a *AuthUsecase) Login(ctx context.Context, user model.User) (model.Token, 
 		Name:    foundUser.Name,
 		Email:   foundUser.Email,
 		IsAdmin: foundUser.IsAdmin,
+		ID:      foundUser.ID,
 	})
 	signedAccessToken, err := accessToken.SignedString([]byte(a.config.SignTokenSecret))
 	if err != nil {
@@ -91,6 +92,7 @@ func (a *AuthUsecase) Login(ctx context.Context, user model.User) (model.Token, 
 		Name:    foundUser.Name,
 		Email:   foundUser.Email,
 		IsAdmin: foundUser.IsAdmin,
+		ID:      foundUser.ID,
 	})
 	signeRefreshToken, err := refreshToken.SignedString([]byte(a.config.SignTokenSecret))
 	if err != nil {
@@ -122,6 +124,7 @@ func (a *AuthUsecase) Refresh(ctx context.Context, token string) (model.Token, e
 		Name:    claim.Name,
 		Email:   claim.Email,
 		IsAdmin: claim.IsAdmin,
+		ID:      claim.ID,
 	})
 	signedAccessToken, err := accessToken.SignedString([]byte(a.config.SignTokenSecret))
 	if err != nil {

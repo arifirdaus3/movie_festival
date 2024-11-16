@@ -46,6 +46,20 @@ func (r *RepositorySQL) GetMovies(ctx context.Context, filter model.FilterMovie)
 }
 func (r *RepositorySQL) GetMoviesByIDs(ctx context.Context, movieIDs []uint) ([]model.Movie, error) {
 	var movies []model.Movie
-	err := r.db.Find(&movies, movieIDs).Error
+	err := r.db.Find(&movies, movieIDs).Preload("Genres").Error
 	return movies, err
+}
+
+func (r *RepositorySQL) InsertMovieUsers(ctx context.Context, user model.User, movie model.Movie) error {
+	err := r.db.Model(&movie).Association("Users").Append(&user)
+	if err != nil {
+		return err
+	}
+	count := r.db.Model(&movie).Association("Users").Count()
+	err = r.db.Model(&movie).Where("id = ?", movie.ID).Update("views", count).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

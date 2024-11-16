@@ -17,4 +17,5 @@ type CustomClaim struct {
 	Name    string
 	Email   string
 	IsAdmin bool
+	ID      uint
 }
