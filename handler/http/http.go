@@ -67,17 +67,14 @@ func (h *HandlerHTTP) InitRoute(e *echo.Echo) {
 		},
 	}), func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-			token, ok := c.Get("user").(*jwt.Token)
-			if !ok {
-				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid token")
-			}
-			user, ok := token.Claims.(*model.CustomClaim)
-			if !ok {
-				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid token")
+			user, err := getUserFromContext(c)
+			if err != nil {
+				return err
 			}
 			if !user.IsAdmin {
 				return echo.NewHTTPError(http.StatusForbidden, "You are not allowed to access this endpoint")
 			}
+
 			return next(c)
 		}
 	})
@@ -103,14 +100,20 @@ func (h *HandlerHTTP) InitRoute(e *echo.Echo) {
 	adminRoute.POST("/movie/upload", h.UploadMovie)
 	adminRoute.PUT("/movie", h.UpdateMovie)
 
-	e.GET("/movie", h.GetMovies)
+	e.GET("/movie", h.GetMovies, echojwt.WithConfig(echojwt.Config{
+		SigningKey: []byte(h.config.SignTokenSecret),
+		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+			return &model.CustomClaim{}
+		},
+		ContinueOnIgnoredError: true,
+		ErrorHandler:           func(c echo.Context, err error) error { return nil },
+	}))
 
 	userRoute.POST("/movie/viewed", h.ViewedMovie)
 
 	e.POST("/movie/vote", h.Refresh)
 	e.GET("/movie/voted", h.Refresh)
 	e.GET("/movie/most-voted", h.Refresh)
-	e.GET("/movie/most-viewed", h.Refresh)
 }
 
 func (h *HandlerHTTP) Register(c echo.Context) error {
@@ -330,6 +333,10 @@ func (h *HandlerHTTP) GetMovies(c echo.Context) error {
 	var filter model.FilterMovie
 	c.Bind(&filter)
 	filter.Default()
+	user, _ := getUserFromContext(c)
+	if !user.IsAdmin {
+		filter.SortBy = ""
+	}
 	movies, err := h.movieUsecase.GetMovies(c.Request().Context(), filter)
 	if err != nil {
 		return err
@@ -354,13 +361,9 @@ func (h *HandlerHTTP) ViewedMovie(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	token, ok := c.Get("user").(*jwt.Token)
-	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid token")
-	}
-	user, ok := token.Claims.(*model.CustomClaim)
-	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid token")
+	user, err := getUserFromContext(c)
+	if err != nil {
+		return err
 	}
 
 	err = h.movieUsecase.ViewedMovie(c.Request().Context(), model.User{
@@ -374,4 +377,16 @@ func (h *HandlerHTTP) ViewedMovie(c echo.Context) error {
 	return c.JSON(http.StatusOK, model.Response{
 		Status: model.ResponseStatusSuccess,
 	})
+}
+
+func getUserFromContext(c echo.Context) (*model.CustomClaim, error) {
+	token, ok := c.Get("user").(*jwt.Token)
+	if !ok {
+		return &model.CustomClaim{}, echo.NewHTTPError(http.StatusUnauthorized, "Invalid token")
+	}
+	user, ok := token.Claims.(*model.CustomClaim)
+	if !ok {
+		return &model.CustomClaim{}, echo.NewHTTPError(http.StatusUnauthorized, "Invalid token")
+	}
+	return user, nil
 }

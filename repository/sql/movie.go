@@ -24,6 +24,9 @@ func (r *RepositorySQL) UpdateMovie(ctx context.Context, movie model.Movie, extr
 func (r *RepositorySQL) GetMovies(ctx context.Context, filter model.FilterMovie) ([]model.Movie, error) {
 	var movies []model.Movie
 	db := r.db.Offset((filter.Page - 1) * filter.Limit).Limit(filter.Limit).Preload("Artists").Preload("Genres")
+	if filter.SortBy == "views" {
+		db = db.Order("views DESC")
+	}
 	if filter.Search != "" {
 		filter.Search = "%" + filter.Search + "%"
 		switch filter.SearchBy {

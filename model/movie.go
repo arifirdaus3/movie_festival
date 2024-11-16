@@ -48,9 +48,10 @@ type UpdateMovieArgs struct {
 }
 
 type FilterMovie struct {
-	SearchBy string `json:"searchBy" query:"searchBy"`
-	Search   string `json:"search" query:"search"`
-	Pagination
+	SearchBy   string `json:"searchBy" query:"searchBy"`
+	Search     string `json:"search" query:"search"`
+	SortBy     string `json:"sortBy" query:"sortBy"`
+	Pagination `json:"pagination"`
 }
 
 func (c *CreateMovie) ToMovie() Movie {
