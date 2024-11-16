@@ -51,29 +51,3 @@ func (r *RepositorySQL) GetGenresByIDs(ctx context.Context, genreIDs []uint) ([]
 func (r *RepositorySQL) InsertGenre(ctx context.Context, genre []model.Genre) error {
 	return r.db.Create(&genre).Error
 }
-func (r *RepositorySQL) InsertMovie(ctx context.Context, movie model.Movie) error {
-	return r.db.Create(&movie).Error
-}
-func (r *RepositorySQL) UpdateMovie(ctx context.Context, movie model.Movie, extraArgs model.UpdateMovieArgs) error {
-	err := r.db.Save(&movie).Error
-	if err != nil {
-		return err
-	}
-	if extraArgs.UpdateGenre {
-		err = r.db.Model(&movie).Association("Genres").Replace(movie.Genres)
-	}
-	if extraArgs.UpdateArtist {
-		err = r.db.Model(&movie).Association("Artists").Replace(movie.Artists)
-	}
-	return err
-}
-func (r *RepositorySQL) GetMovies(ctx context.Context, pagination model.Pagination) ([]model.Movie, error) {
-	var movies []model.Movie
-	err := r.db.Offset((pagination.Page - 1) * pagination.Limit).Limit(pagination.Limit).Find(&movies).Error
-	return movies, err
-}
-func (r *RepositorySQL) GetMoviesByIDs(ctx context.Context, movieIDs []uint) ([]model.Movie, error) {
-	var movies []model.Movie
-	err := r.db.Find(&movies, movieIDs).Error
-	return movies, err
-}

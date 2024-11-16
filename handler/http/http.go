@@ -41,7 +41,7 @@ type artistUsecase interface {
 }
 type movieUsecase interface {
 	InsertMovie(ctx context.Context, movies model.Movie) error
-	GetMovies(ctx context.Context, pagination model.Pagination) ([]model.Movie, error)
+	GetMovies(ctx context.Context, filter model.FilterMovie) ([]model.Movie, error)
 	UpdateMovie(ctx context.Context, updateMovie model.UpdateMovie) error
 }
 
@@ -95,7 +95,7 @@ func (h *HandlerHTTP) InitRoute(e *echo.Echo) {
 	adminRoute.POST("/movie/upload", h.UploadMovie)
 	adminRoute.PUT("/movie", h.UpdateMovie)
 
-	e.GET("/movie", h.Refresh)
+	e.GET("/movie", h.GetMovies)
 
 	e.POST("/movie/viewed", h.Refresh)
 	e.POST("/movie/vote", h.Refresh)
@@ -317,20 +317,20 @@ func (h *HandlerHTTP) UploadMovie(c echo.Context) error {
 	})
 }
 
-// func (h *HandlerHTTP) GetMovies(c echo.Context) error {
-// 	var pagination model.Pagination
-// 	c.Bind(&pagination)
-// 	pagination.Default()
-// 	movies, err := h.movieUsecase.GetMovies(c.Request().Context(), pagination)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	res := []model.MovieHTTPResponse{}
-// 	for _, v := range movies {
-// 		res = append(res, model.NewMovieHTTPResponse(v))
-// 	}
-// 	return c.JSON(http.StatusOK, model.Response{
-// 		Status: model.ResponseStatusSuccess,
-// 		Data:   res,
-// 	})
-// }
+func (h *HandlerHTTP) GetMovies(c echo.Context) error {
+	var filter model.FilterMovie
+	c.Bind(&filter)
+	filter.Default()
+	movies, err := h.movieUsecase.GetMovies(c.Request().Context(), filter)
+	if err != nil {
+		return err
+	}
+	res := []model.MovieHTTPResponse{}
+	for _, v := range movies {
+		res = append(res, model.NewMovieHTTPResponse(v))
+	}
+	return c.JSON(http.StatusOK, model.Response{
+		Status: model.ResponseStatusSuccess,
+		Data:   res,
+	})
+}

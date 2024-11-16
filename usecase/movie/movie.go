@@ -17,7 +17,7 @@ type MovieUsecase struct {
 }
 type repository interface {
 	InsertMovie(ctx context.Context, movie model.Movie) error
-	GetMovies(ctx context.Context, pagination model.Pagination) ([]model.Movie, error)
+	GetMovies(ctx context.Context, filter model.FilterMovie) ([]model.Movie, error)
 	GetGenresByIDs(ctx context.Context, genreIDs []uint) ([]model.Genre, error)
 	GetArtistsByIDs(ctx context.Context, artistIDs []uint) ([]model.Artist, error)
 	GetMoviesByIDs(ctx context.Context, movieIDs []uint) ([]model.Movie, error)
@@ -74,8 +74,8 @@ func (a *MovieUsecase) InsertMovie(ctx context.Context, movies model.Movie) erro
 	return nil
 }
 
-func (a *MovieUsecase) GetMovies(ctx context.Context, pagination model.Pagination) ([]model.Movie, error) {
-	movies, err := a.repository.GetMovies(ctx, pagination)
+func (a *MovieUsecase) GetMovies(ctx context.Context, filter model.FilterMovie) ([]model.Movie, error) {
+	movies, err := a.repository.GetMovies(ctx, filter)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return []model.Movie{}, echo.NewHTTPError(http.StatusNotFound, "Movie not found")
 	}

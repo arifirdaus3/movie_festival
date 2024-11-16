@@ -13,6 +13,15 @@ type Movie struct {
 	Genres         []Genre  `gorm:"many2many:movie_genres;"`
 	UserMovieVotes []UserMovieVote
 }
+type MovieHTTPResponse struct {
+	ID          uint                 `json:"id"`
+	Title       string               `json:"title"`
+	Description string               `json:"description"`
+	Duration    int64                `json:"duration"`
+	WatchURL    string               `json:"watchURL"`
+	Genres      []GenreHTTPResponse  `json:"genres"`
+	Artists     []ArtistHTTPResponse `json:"artists"`
+}
 
 type CreateMovie struct {
 	Title       string `json:"title"`
@@ -36,6 +45,12 @@ type UpdateMovieArgs struct {
 	UpdateArtist bool
 }
 
+type FilterMovie struct {
+	SearchBy string `json:"searchBy" query:"searchBy"`
+	Search   string `json:"search" query:"search"`
+	Pagination
+}
+
 func (c *CreateMovie) ToMovie() Movie {
 	genre := []Genre{}
 	for _, v := range c.Genres {
@@ -52,5 +67,25 @@ func (c *CreateMovie) ToMovie() Movie {
 		WatchURL:    c.WatchURL,
 		Genres:      genre,
 		Artists:     artist,
+	}
+}
+
+func NewMovieHTTPResponse(m Movie) MovieHTTPResponse {
+	genres := []GenreHTTPResponse{}
+	for _, v := range m.Genres {
+		genres = append(genres, NewGenreHTTPResponse(v))
+	}
+	artists := []ArtistHTTPResponse{}
+	for _, v := range m.Artists {
+		artists = append(artists, NewArtistHTTPResponse(v))
+	}
+	return MovieHTTPResponse{
+		ID:          m.ID,
+		Title:       m.Title,
+		Description: m.Description,
+		Duration:    m.Duration,
+		WatchURL:    m.WatchURL,
+		Genres:      genres,
+		Artists:     artists,
 	}
 }
