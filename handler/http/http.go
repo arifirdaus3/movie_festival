@@ -42,6 +42,7 @@ type artistUsecase interface {
 type movieUsecase interface {
 	InsertMovie(ctx context.Context, movies model.Movie) error
 	GetMovies(ctx context.Context, pagination model.Pagination) ([]model.Movie, error)
+	UpdateMovie(ctx context.Context, updateMovie model.UpdateMovie) error
 }
 
 func NewHandlerHTTP(config *model.Config, authUsecase authUsecase, artistUsecase artistUsecase, genreUsecase genreUsecase, movieUsecase movieUsecase) *HandlerHTTP {
@@ -92,10 +93,10 @@ func (h *HandlerHTTP) InitRoute(e *echo.Echo) {
 
 	adminRoute.POST("/movie", h.InsertMovie)
 	adminRoute.POST("/movie/upload", h.UploadMovie)
+	adminRoute.PUT("/movie", h.UpdateMovie)
 
 	e.GET("/movie", h.Refresh)
 
-	e.PUT("/movie", h.Refresh)
 	e.POST("/movie/viewed", h.Refresh)
 	e.POST("/movie/vote", h.Refresh)
 	e.GET("/movie/voted", h.Refresh)
@@ -270,7 +271,18 @@ func (h *HandlerHTTP) InsertMovie(c echo.Context) error {
 		Status: model.ResponseStatusSuccess,
 	})
 }
+func (h *HandlerHTTP) UpdateMovie(c echo.Context) error {
+	var movie model.UpdateMovie
+	c.Bind(&movie)
 
+	err := h.movieUsecase.UpdateMovie(c.Request().Context(), movie)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, model.Response{
+		Status: model.ResponseStatusSuccess,
+	})
+}
 func (h *HandlerHTTP) UploadMovie(c echo.Context) error {
 	file, err := c.FormFile("file")
 	if err != nil {

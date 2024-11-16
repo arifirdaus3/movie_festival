@@ -22,6 +22,19 @@ type CreateMovie struct {
 	Genres      []uint `json:"genres"`
 	Artists     []uint `json:"artists"`
 }
+type UpdateMovie struct {
+	ID          uint    `json:"id"`
+	Title       *string `json:"title,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Duration    *int64  `json:"duration,omitempty"`
+	WatchURL    *string `json:"watchURL,omitempty"`
+	Genres      *[]uint `json:"genres,omitempty"`
+	Artists     *[]uint `json:"artists,omitempty"`
+}
+type UpdateMovieArgs struct {
+	UpdateGenre  bool
+	UpdateArtist bool
+}
 
 func (c *CreateMovie) ToMovie() Movie {
 	genre := []Genre{}
