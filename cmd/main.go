@@ -6,7 +6,10 @@ import (
 	handlerhttp "moviefestival/handler/http"
 	"moviefestival/model"
 	repositorysql "moviefestival/repository/sql"
+	artistusecase "moviefestival/usecase/artist"
 	authusecase "moviefestival/usecase/auth"
+	genreusecase "moviefestival/usecase/genre"
+	movieusecase "moviefestival/usecase/movie"
 
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
@@ -26,9 +29,15 @@ func main() {
 		log.Fatal("failed to migrate database model, ", err)
 	}
 	e := echo.New()
+
 	repositorySQL := repositorysql.NewRepositorySQL(db)
+
 	authUsecase := authusecase.NewAuthUsecase(&config, repositorySQL)
-	handlerHTTP := handlerhttp.NewHandlerHTTP(authUsecase)
+	artistUsecase := artistusecase.NewArtistUsecase(repositorySQL)
+	genreUsecase := genreusecase.NewGenreUsecase(repositorySQL)
+	movieUsecase := movieusecase.NewMovieUsecase(repositorySQL)
+
+	handlerHTTP := handlerhttp.NewHandlerHTTP(&config, authUsecase, artistUsecase, genreUsecase, movieUsecase)
 
 	handlerHTTP.InitRoute(e)
 
