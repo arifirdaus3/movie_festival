@@ -1,0 +1,639 @@
+{
+	"info": {
+		"_postman_id": "2e33251b-6d71-4442-bcfb-fa4cd2ac9083",
+		"name": "Movie Festival",
+		"description": "Movie festival API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "6851137"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"user\",\r\n    \"isAdmin\": false,\r\n    \"email\": \"user@user.com\",\r\n    \"password\": \"password\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9090/auth/register",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register new user, it has isAdmin to make it admin or not but it isn't good to do it like that. We can create new internal endpoint that can't be accessed from public to make admin user."
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "password",
+									"value": "adminpassword",
+									"type": "string"
+								},
+								{
+									"key": "username",
+									"value": "admin@admin.com",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9090/auth/login",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login using email and password with basic authorization header. It will return access token in body and refresh token in cookies.\n\nFor logout itself user can remove the cookie and access token because we are using JWT."
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9090/auth/refresh",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"auth",
+								"refresh"
+							]
+						},
+						"description": "Refresh access token. It will fetch from client cookies."
+					},
+					"response": []
+				}
+			],
+			"description": "Collection of authentication"
+		},
+		{
+			"name": "Artist",
+			"item": [
+				{
+					"name": "Get Artists",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9090/artist",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"artist"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Artist",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\r\n    {\"name\":\"naruto\"},\r\n    {\"name\":\"sasuke\"}\r\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9090/artist",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"artist"
+							]
+						},
+						"description": "Unique Name"
+					},
+					"response": []
+				}
+			],
+			"description": "To create and get Artist"
+		},
+		{
+			"name": "Genre",
+			"item": [
+				{
+					"name": "Create Genre",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "[\r\n    {\"name\":\"Horror\"},\r\n    {\"name\":\"Thriller\"}\r\n]",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9090/genre",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"genre"
+							]
+						},
+						"description": "Unique name"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Genre",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9090/genre",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"genre"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "To create and get genre"
+		},
+		{
+			"name": "Movie",
+			"item": [
+				{
+					"name": "Get Movie",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9090/movie?sortBy=views",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"movie"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "ler",
+									"disabled": true
+								},
+								{
+									"key": "searchBy",
+									"value": "genre",
+									"disabled": true
+								},
+								{
+									"key": "sortBy",
+									"value": "views"
+								}
+							]
+						},
+						"description": "To get movie list. For the sort by query, only admin can use it."
+					},
+					"response": []
+				},
+				{
+					"name": "View Movie",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": 3\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9090/movie/viewed",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"movie",
+								"viewed"
+							]
+						},
+						"description": "To flag user that they already watch the movie"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Movie",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\":\"LOL#1\",\r\n    \"description\":\"ASD\",\r\n    \"duration\":240,\r\n    \"watchURL\":\"\",\r\n    \"genres\":[2],\r\n    \"artists\":[2]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9090/movie",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"movie"
+							]
+						},
+						"description": "Create movie, only admin can use this endpoint"
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Movie",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": "/C:/Users/shuga/Downloads/Video/devskiller.mkv"
+								}
+							]
+						},
+						"url": {
+							"raw": "localhost:9090/movie/upload",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"movie",
+								"upload"
+							]
+						},
+						"description": "To upload movie to server and return the url. only admin can use this."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Movie",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": 1,\r\n    \"title\":\"Sasuke2\",\r\n    \"description\":\"ASD\",\r\n    \"duration\":240,\r\n    \"watchURL\":\"/public/177f079c-4daf-4def-a709-8fb9903b4243.mkv\",\r\n    \"genres\":[2],\r\n    \"artists\":[2]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9090/movie",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"movie"
+							]
+						},
+						"description": "To update movie, only admin can use this."
+					},
+					"response": []
+				}
+			],
+			"description": "Collection of Movie API"
+		},
+		{
+			"name": "Vote",
+			"item": [
+				{
+					"name": "User Movie Vote",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9090/movie/voted",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"movie",
+								"voted"
+							]
+						},
+						"description": "Get user voted movie"
+					},
+					"response": []
+				},
+				{
+					"name": "Vote Movie",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"movieId\": 1,\r\n    \"type\": false\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9090/movie/vote",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"movie",
+								"vote"
+							]
+						},
+						"description": "upvote/downvote movie"
+					},
+					"response": []
+				},
+				{
+					"name": "Unvote Movie",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"movieId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9090/movie/unvote",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"movie",
+								"unvote"
+							]
+						},
+						"description": "Unvote movie"
+					},
+					"response": []
+				},
+				{
+					"name": "Most Voted Movie",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "localhost:9090/movie/most-voted",
+							"host": [
+								"localhost"
+							],
+							"port": "9090",
+							"path": [
+								"movie",
+								"most-voted"
+							]
+						},
+						"description": "Get sorted most voted movie"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "tokenName",
+				"value": "User",
+				"type": "string"
+			},
+			{
+				"key": "password",
+				"value": "password",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "user@user.com",
+				"type": "string"
+			},
+			{
+				"key": "tokenRequestParams",
+				"value": [
+					{
+						"key": "aacc",
+						"value": "",
+						"enabled": false,
+						"send_as": "request_header"
+					}
+				],
+				"type": "any"
+			},
+			{
+				"key": "refreshTokenUrl",
+				"value": "localhost:9090/auth/refresh",
+				"type": "string"
+			},
+			{
+				"key": "client_authentication",
+				"value": "header",
+				"type": "string"
+			},
+			{
+				"key": "accessTokenUrl",
+				"value": "localhost:9090/auth/login",
+				"type": "string"
+			},
+			{
+				"key": "refreshRequestParams",
+				"value": [],
+				"type": "any"
+			},
+			{
+				"key": "authRequestParams",
+				"value": [],
+				"type": "any"
+			},
+			{
+				"key": "challengeAlgorithm",
+				"value": "S256",
+				"type": "string"
+			},
+			{
+				"key": "grant_type",
+				"value": "password_credentials",
+				"type": "string"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

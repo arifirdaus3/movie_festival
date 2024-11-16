@@ -24,6 +24,7 @@ type HandlerHTTP struct {
 	genreUsecase  genreUsecase
 	artistUsecase artistUsecase
 	movieUsecase  movieUsecase
+	voteUsecase   voteUsecase
 }
 
 type authUsecase interface {
@@ -47,13 +48,21 @@ type movieUsecase interface {
 	ViewedMovie(ctx context.Context, user model.User, movie model.Movie) error
 }
 
-func NewHandlerHTTP(config *model.Config, authUsecase authUsecase, artistUsecase artistUsecase, genreUsecase genreUsecase, movieUsecase movieUsecase) *HandlerHTTP {
+type voteUsecase interface {
+	VoteMovie(ctx context.Context, vote model.UserMovieVote) error
+	UnvoteMovie(ctx context.Context, vote model.UserMovieVote) error
+	GetUserVote(ctx context.Context, userID uint) ([]model.UserMovieVote, error)
+	GetMostVotedMovies(ctx context.Context) ([]model.VotedMovieCount, error)
+}
+
+func NewHandlerHTTP(config *model.Config, authUsecase authUsecase, artistUsecase artistUsecase, genreUsecase genreUsecase, movieUsecase movieUsecase, voteUsecase voteUsecase) *HandlerHTTP {
 	return &HandlerHTTP{
 		config:        config,
 		authUsecase:   authUsecase,
 		genreUsecase:  genreUsecase,
 		artistUsecase: artistUsecase,
 		movieUsecase:  movieUsecase,
+		voteUsecase:   voteUsecase,
 	}
 }
 
@@ -111,9 +120,10 @@ func (h *HandlerHTTP) InitRoute(e *echo.Echo) {
 
 	userRoute.POST("/movie/viewed", h.ViewedMovie)
 
-	e.POST("/movie/vote", h.Refresh)
-	e.GET("/movie/voted", h.Refresh)
-	e.GET("/movie/most-voted", h.Refresh)
+	userRoute.POST("/movie/vote", h.VoteMovie)
+	userRoute.POST("/movie/unvote", h.UnvoteMovie)
+	userRoute.GET("/movie/voted", h.UserMovieVote)
+	adminRoute.GET("/movie/most-voted", h.MostVotedMovie)
 }
 
 func (h *HandlerHTTP) Register(c echo.Context) error {
@@ -376,6 +386,98 @@ func (h *HandlerHTTP) ViewedMovie(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, model.Response{
 		Status: model.ResponseStatusSuccess,
+	})
+}
+
+func (h *HandlerHTTP) VoteMovie(c echo.Context) error {
+	var vote model.RequestMovieVote
+	c.Bind(&vote)
+	user, err := getUserFromContext(c)
+	if err != nil {
+		return err
+	}
+	vote.UserID = user.ID
+	err = validation.ValidateStruct(&vote,
+		validation.Field(&vote.UserID, validation.Required),
+		validation.Field(&vote.MovieID, validation.Required),
+	)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	err = h.voteUsecase.VoteMovie(c.Request().Context(), model.UserMovieVote{
+		UserID:  user.ID,
+		MovieID: vote.MovieID,
+		Type:    vote.Type,
+	})
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, model.Response{
+		Status: model.ResponseStatusSuccess,
+	})
+}
+
+func (h *HandlerHTTP) UnvoteMovie(c echo.Context) error {
+	var vote model.RequestMovieVote
+	c.Bind(&vote)
+	user, err := getUserFromContext(c)
+	if err != nil {
+		return err
+	}
+	vote.UserID = user.ID
+	err = validation.ValidateStruct(&vote,
+		validation.Field(&vote.UserID, validation.Required),
+		validation.Field(&vote.MovieID, validation.Required),
+	)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	err = h.voteUsecase.UnvoteMovie(c.Request().Context(), model.UserMovieVote{
+		UserID:  vote.MovieID,
+		MovieID: vote.MovieID,
+	})
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, model.Response{
+		Status: model.ResponseStatusSuccess,
+	})
+}
+
+func (h *HandlerHTTP) UserMovieVote(c echo.Context) error {
+	user, err := getUserFromContext(c)
+	if err != nil {
+		return err
+	}
+
+	userVote, err := h.voteUsecase.GetUserVote(c.Request().Context(), user.ID)
+	if err != nil {
+		return err
+	}
+	res := []model.UserVote{}
+	for _, v := range userVote {
+		res = append(res, model.UserVote{
+			MovieID: v.MovieID,
+			Type:    v.Type,
+		})
+	}
+	return c.JSON(http.StatusOK, model.Response{
+		Status: model.ResponseStatusSuccess,
+		Data:   res,
+	})
+}
+
+func (h *HandlerHTTP) MostVotedMovie(c echo.Context) error {
+	userVote, err := h.voteUsecase.GetMostVotedMovies(c.Request().Context())
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, model.Response{
+		Status: model.ResponseStatusSuccess,
+		Data:   userVote,
 	})
 }
 

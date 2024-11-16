@@ -51,3 +51,42 @@ func (r *RepositorySQL) GetGenresByIDs(ctx context.Context, genreIDs []uint) ([]
 func (r *RepositorySQL) InsertGenre(ctx context.Context, genre []model.Genre) error {
 	return r.db.Create(&genre).Error
 }
+func (r *RepositorySQL) GetUserMovieVoteIDs(ctx context.Context, vote model.UserMovieVote) (model.UserMovieVote, error) {
+	var userMovieVote model.UserMovieVote
+	err := r.db.Find(&userMovieVote, "user_id=? AND movie_id=?", vote.UserID, vote.MovieID).Error
+	return userMovieVote, err
+}
+func (r *RepositorySQL) InsertUserMovieVoteIDs(ctx context.Context, vote model.UserMovieVote) error {
+	return r.db.Create(&vote).Error
+}
+func (r *RepositorySQL) UpdateUserMovieVoteIDs(ctx context.Context, vote model.UserMovieVote) error {
+	return r.db.Model(&model.UserMovieVote{}).Where("movie_id = ? AND user_id = ?", vote.MovieID, vote.UserID).Update("type", vote.Type).Error
+}
+func (r *RepositorySQL) DeleteUserMovieVoteIDs(ctx context.Context, vote model.UserMovieVote) error {
+	return r.db.Model(&model.UserMovieVote{}).Where("movie_id = ? AND user_id = ?", vote.MovieID, vote.UserID).Delete(&vote).Error
+}
+func (r *RepositorySQL) GetUserVote(ctx context.Context, userID uint) ([]model.UserMovieVote, error) {
+	var userMovieVote []model.UserMovieVote
+	err := r.db.Find(&userMovieVote, "user_id=? ", userID).Error
+	return userMovieVote, err
+}
+func (r *RepositorySQL) GetMostVotedMovie(ctx context.Context) ([]model.VotedMovieCount, error) {
+	rows, err := r.db.Model(&model.UserMovieVote{}).Select("movie_id, count(*) as total").Group("movie_id").Order("total desc").Rows()
+	if err != nil {
+		return []model.VotedMovieCount{}, err
+	}
+	var votedMovie []model.VotedMovieCount
+	defer rows.Close()
+	for rows.Next() {
+		var (
+			id    uint
+			count int64
+		)
+		err := rows.Scan(&id, &count)
+		if err != nil {
+			return votedMovie, err
+		}
+		votedMovie = append(votedMovie, model.VotedMovieCount{MovieID: id, Count: count})
+	}
+	return votedMovie, err
+}

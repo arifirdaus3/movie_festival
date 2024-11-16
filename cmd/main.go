@@ -10,6 +10,7 @@ import (
 	authusecase "moviefestival/usecase/auth"
 	genreusecase "moviefestival/usecase/genre"
 	movieusecase "moviefestival/usecase/movie"
+	voteusecase "moviefestival/usecase/vote"
 
 	"github.com/labstack/echo/v4"
 	"github.com/spf13/viper"
@@ -36,8 +37,9 @@ func main() {
 	artistUsecase := artistusecase.NewArtistUsecase(repositorySQL)
 	genreUsecase := genreusecase.NewGenreUsecase(repositorySQL)
 	movieUsecase := movieusecase.NewMovieUsecase(repositorySQL)
+	voteUsecase := voteusecase.NewVoteUsecase(repositorySQL)
 
-	handlerHTTP := handlerhttp.NewHandlerHTTP(&config, authUsecase, artistUsecase, genreUsecase, movieUsecase)
+	handlerHTTP := handlerhttp.NewHandlerHTTP(&config, authUsecase, artistUsecase, genreUsecase, movieUsecase, voteUsecase)
 
 	handlerHTTP.InitRoute(e)
 
